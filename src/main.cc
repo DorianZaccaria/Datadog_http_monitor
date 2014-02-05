@@ -5,6 +5,7 @@ int				main (int			argc,
 {
   OptCode			code;
   Options*			Opt = Options::getOpt ();
+  Sniffer*			Snif = Sniffer::getSniffer ();
 
   Logger::init ();
   code = Opt->parse (argc, argv);
@@ -13,8 +14,9 @@ int				main (int			argc,
   {
     case ERR_NONE:
       Logger::log (Logger::INFO, "Options parsed");
-
+      Snif->init ();
       Logger::log (Logger::INFO, "Program launched");
+      Snif->snif ();
       return code;
     case ERR_ARG:
       Logger::log (Logger::ERROR, "Unrecognized argument");

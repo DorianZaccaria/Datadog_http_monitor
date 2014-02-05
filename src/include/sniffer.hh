@@ -1,6 +1,11 @@
 #ifndef SNIFFER_HH_
 # define SNIFFER_HH_
 
+# include <pcap.h>
+
+# define DEV "wlan1"
+# define FILTER "port 80"
+
 /*!
  * @class Sniffer
  * This class is the core of the program, it captures http packets and
@@ -19,6 +24,11 @@ class Sniffer
      */
     ~Sniffer ();
     /*!
+     * @brief snif
+     * starts the packet sniffing
+     */
+    int					snif ();
+    /*!
      * @brief init
      * initializes the ethernet interface
      */
@@ -35,9 +45,13 @@ class Sniffer
      */
     static Sniffer*			_singleton;
     /*!
-     * @brief the device na;e to use
+     * @brief the device name to use
      */
-    char*				_dev = NULL;
+//    char				_dev = "l0";
+    /*!
+     * @brief defines the sniffing session
+     */
+    pcap_t*				_handle = NULL;
 
 };
 
