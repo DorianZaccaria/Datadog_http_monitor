@@ -52,3 +52,13 @@ Logger::log (Logger::Category const			cat,
 	 << "[" << cat_header[cat] << "] "
 	 << msg << std::endl;
 }
+
+void
+Logger::log (Logger::Category const			cat,
+	     std::string const&				msg,
+	     char const*				extra)
+{
+  std::string						tmp (extra);
+
+  log (cat, msg + tmp);
+}

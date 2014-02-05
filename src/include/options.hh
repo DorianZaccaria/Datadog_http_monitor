@@ -9,6 +9,7 @@ typedef enum OptCode
 {
   ERR_NONE = 0,
   ERR_ARG,
+  ERR_SNF,
   ERR_ERROR
 } OptCode;
 

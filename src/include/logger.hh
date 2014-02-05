@@ -40,6 +40,18 @@ class Logger
      */
     static void				log (Category const,
 					     std::string const&);
+    /*!
+     * @brief log
+     * This function gives the main interface to print a message on the
+     * standard output
+     *
+     * @param Category: the message category
+     * @param std::string: the message
+     * @param char*: extra message
+     */
+    static void				log (Category const,
+					     std::string const&,
+					     char const*);
 
   private:
     /*!

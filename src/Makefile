@@ -3,6 +3,7 @@
 SOURCES = \
     main.cc \
     options.cc \
+    sniffer.cc \
     logger.cc
 
 # DO NOT EDIT THE REMAINING FILE
