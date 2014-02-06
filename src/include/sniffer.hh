@@ -3,6 +3,8 @@
 
 # include <pcap.h>
 # include <netinet/in.h>
+# include <map>
+# include <string>
 
 # define DEV "lo"
 # define FILTER "port 80"
@@ -107,7 +109,10 @@ class Sniffer
      * initializes the ethernet interface
      */
     int					init ();
-
+    /*!
+     * @brief the counter for the http access
+     */
+    static std::map<std::string, int>	_map;
 
   private:
     /*!
@@ -123,6 +128,7 @@ class Sniffer
      * @brief the device name to use
      */
 //    char				_dev = "l0";
+
     /*!
      * @brief defines the sniffing session
      */
@@ -130,13 +136,23 @@ class Sniffer
 
 };
 
+/*!
+ * @brief got_packet
+ * the handler when a packet is received
+ */
+void				got_packet(u_char*,
+					   const struct pcap_pkthdr*,
+					   const u_char*);
     /*!
-     * @brief got_packet
-     * the handler when a packet is received
+     * @brief if the http request is a GET, extract the file name and
+     * count it
      */
-    void				got_packet(u_char*,
-						   const struct pcap_pkthdr*,
-						   const u_char*);
-
+//    void				parseHTTP (const u_char*,
+//						   int);
+    /*!
+     * @brief if the http request is a GET, extract the file name and
+     * count it
+     */
+//  void				count (std::string const&);
 
 #endif /* !SNIFFER_HH_ */
