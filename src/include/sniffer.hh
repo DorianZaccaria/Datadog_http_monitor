@@ -5,6 +5,8 @@
 # include <netinet/in.h>
 # include <map>
 # include <string>
+#include <ctime>
+#include <chrono>
 
 # define DEV "lo"
 # define FILTER "port 80"
@@ -105,6 +107,16 @@ class Sniffer
      */
     int					snif ();
     /*!
+     * @brief checkAlert
+     * every 10 second this function print a messsage with the most loaded part of the website
+     */
+    static void                         checkTraffic ();
+    /*!
+     * @brief checkAlert
+     * check if an alert should be raised
+     */
+    static void                         checkAlert ();
+    /*!
      * @brief init
      * initializes the ethernet interface
      */
@@ -113,6 +125,10 @@ class Sniffer
      * @brief the counter for the http access
      */
     static std::map<std::string, int>	_map;
+    /*!
+     * @brief the timestamp to measure the 10s hits
+     */
+    static std::time_t                  _firstTime;
 
   private:
     /*!

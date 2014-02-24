@@ -29,7 +29,5 @@ int				main (int			argc,
       return code;
   }
 
-
-
   Logger::log (Logger::INFO, "Program terminated");
 }

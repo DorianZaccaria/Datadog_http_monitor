@@ -41,7 +41,7 @@ DOCDIR=$(PROJECTDIR)/doc
 DOXYFILE = $(DOCDIR)/Doxyfile
 
 CPPFLAGS  = -W -Wall -Wextra
-CPPFLAGS += -Werror
+#CPPFLAGS += -Werror
 CPPFLAGS += $(EXTRA_CPPFLAGS)
 CPPFLAGS += -I$(INCLUDEDIR) -I$(LIBSDIR)/include
 

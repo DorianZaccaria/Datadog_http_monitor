@@ -11,6 +11,7 @@ static std::string const cat_header[Logger::DEBUG + 1] =
 {
   [Logger::ERROR] = "ERROR",
   [Logger::INFO] = "INFO",
+  [Logger::ALERT] = "ALERT",
   [Logger::DEBUG] = "DEBUG"
 };
 
@@ -36,6 +37,7 @@ Logger::log (Logger::Category const			cat,
   std::chrono::system_clock::time_point			now;
   std::time_t						tt;
   std::streambuf*					buf = NULL;
+
   if (cat == ERROR)
     buf = std::cerr.rdbuf ();
   else

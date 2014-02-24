@@ -1,12 +1,16 @@
 #include <iostream>
-
+#include <thread>
+#include <mutex>
 
 #include "sniffer.hh"
 #include "options.hh"
 #include "logger.hh"
 
 Sniffer*					Sniffer::_singleton = NULL;
-std::map<std::string, int>	Sniffer::_map;
+std::map<std::string, int>                      Sniffer::_map;
+std::time_t                                     Sniffer::_firstTime;
+std::mutex                                      mtx;
+
 
 Sniffer::Sniffer ()
 {
@@ -26,99 +30,6 @@ Sniffer::getSniffer ()
 }
 
 void
-print_hex_ascii_line(const u_char *payload, int len, int offset)
-{
-
-  int i;
-  int gap;
-  const u_char *ch;
-
-  /* offset */
-  printf("%05d   ", offset);
-
-  /* hex */
-  ch = payload;
-  for(i = 0; i < len; i++) {
-    printf("%02x ", *ch);
-    ch++;
-    /* print extra space after 8th byte for visual aid */
-    if (i == 7)
-      printf(" ");
-  }
-  /* print space to handle line less than 8 bytes */
-  if (len < 8)
-    printf(" ");
-
-  /* fill hex gap with spaces if not full line */
-  if (len < 16) {
-    gap = 16 - len;
-    for (i = 0; i < gap; i++) {
-      printf("   ");
-    }
-  }
-  printf("   ");
-
-  /* ascii (if printable) */
-  ch = payload;
-  for(i = 0; i < len; i++) {
-    if (isprint(*ch))
-      printf("%c", *ch);
-    else
-      printf(".");
-    ch++;
-  }
-
-  printf("\n");
-
-  return;
-}
-
-/*
- * print packet payload data (avoid printing binary data)
- */
-void
-print_payload(const u_char *payload, int len)
-{
-
-  int len_rem = len;
-  int line_width = 16;   /* number of bytes per line */
-  int line_len;
-  int offset = 0;     /* zero-based offset counter */
-  const u_char *ch = payload;
-
-  if (len <= 0)
-    return;
-
-  /* data fits on one line */
-  if (len <= line_width) {
-    print_hex_ascii_line(ch, len, offset);
-    return;
-  }
-
-  /* data spans multiple lines */
-  for ( ;; ) {
-    /* compute current line length */
-    line_len = line_width % len_rem;
-    /* print line */
-    print_hex_ascii_line(ch, line_len, offset);
-    /* compute total remaining */
-    len_rem = len_rem - line_len;
-    /* shift pointer to remaining bytes to print */
-    ch = ch + line_len;
-    /* add offset */
-    offset = offset + line_width;
-    /* check if we have line width chars or less */
-    if (len_rem <= line_width) {
-      /* print last line and get out */
-      print_hex_ascii_line(ch, len_rem, offset);
-      break;
-    }
-  }
-
-  return;
-}
-
-void
 count (std::string const&			str)
 {
   if (Sniffer::_map.find (str) == Sniffer::_map.end ())
@@ -126,12 +37,11 @@ count (std::string const&			str)
   else
     Sniffer::_map[str]++;
 
-  Logger::log (Logger::DEBUG, str);
-  std::cout << Sniffer::_map[str] << std::endl;
+  Logger::log (Logger::DEBUG, std::to_string(Sniffer::_map[str]));
 }
 
 void
-parseHTTP (const u_char*		payload,
+parseHTTP (const u_char*                        payload,
 		    int				size)
 {
   char						method[] = "GET";
@@ -144,11 +54,12 @@ parseHTTP (const u_char*		payload,
 
   for (int i = 4; i < size; i++)
   {
-    if (payload[i] == ' ')
+    if (payload[i] == ' ' || (payload[i] == '/' && i > 4))
       break;
     else
       str.append (1, payload[i]);
   }
+
   Logger::log (Logger::DEBUG, str);
   count (str);
 }
@@ -158,56 +69,104 @@ got_packet(u_char*				args,
 	   const struct pcap_pkthdr*		header,
 	   const u_char*			packet)
 {
-  const struct sniff_ethernet *ethernet; /* The ethernet header */
-  const struct sniff_ip *ip; /* The IP header */
-  const struct sniff_tcp *tcp; /* The TCP header */
-  const u_char *payload; /* Packet payload */
-
-  u_int size_ip;
-  u_int size_tcp;
-  int size_payload;
-
-  args = args;
-  header = header;
+  const struct sniff_ethernet*                  ethernet;
+  const struct sniff_ip*                        ip;
+  const struct sniff_tcp*                       tcp;
+  const u_char*                                 payload;
+  u_int                                         size_ip;
+  u_int                                         size_tcp;
+  int                                           size_payload;
 
   ethernet = (struct sniff_ethernet*)(packet);
   ip = (struct sniff_ip*)(packet + SIZE_ETHERNET);
-  size_ip = IP_HL(ip)*4;
-  if (size_ip < 20) {
-    printf("   * Invalid IP header length: %u bytes\n", size_ip);
+  size_ip = IP_HL(ip) * 4;
+  if (size_ip < 20)
+  {
+    Logger::log (Logger::ERROR, "Invalid IP header length: " +  std::to_string (size_ip));
     return;
   }
+
   tcp = (struct sniff_tcp*)(packet + SIZE_ETHERNET + size_ip);
   size_tcp = TH_OFF(tcp)*4;
-  if (size_tcp < 20) {
-    printf("   * Invalid TCP header length: %u bytes\n", size_tcp);
+  if (size_tcp < 20)
+  {
+    Logger::log (Logger::ERROR, "Invalid TCP header length: " + std::to_string (size_tcp));
     return;
   }
+
   payload = (u_char *)(packet + SIZE_ETHERNET + size_ip + size_tcp);
-//  std::string str (payload);
-
   size_payload = ntohs(ip->ip_len) - (size_ip + size_tcp);
-  //Logger::log (Logger::INFO, "toto");
-  ethernet = ethernet;
 
-  if (size_payload > 0) {
-//    printf("   Payload (%d bytes):\n", size_payload);
-    //print_payload(payload, size_payload);
+  if (size_payload > 0)
     parseHTTP (payload, size_payload);
+
+  Sniffer::checkAlert ();
+}
+
+void
+Sniffer::checkTraffic ()
+{
+  std::chrono::system_clock::time_point         start;
+  std::chrono::system_clock::time_point         end;
+  std::map<std::string, int>::iterator          it;
+  int                                           max = 0;
+  std::string                                   str;
+  int                                           diff;
+
+  while (true)
+  {
+    start = std::chrono::system_clock::now ();
+    mtx.lock ();
+    for (it = Sniffer::_map.begin (); it != Sniffer::_map.end (); it++)
+      if ((*it).second > max)
+      {
+        max = (*it).second;
+        str = (*it).first;
+      }
+
+    Logger::log (Logger::DEBUG, "In thread traffic, diff time = " + std::to_string (diff));
+    Logger::log (Logger::ALERT, "best hit: " + str + " HITS: " + std::to_string (max));
+
+    Sniffer::_map.clear ();
+
+    mtx.unlock ();
+
+    end = std::chrono::system_clock::now ();
+
+    diff = difftime (std::chrono::system_clock::to_time_t (end),
+                     std::chrono::system_clock::to_time_t (start));
+
+    std::this_thread::sleep_for (std::chrono::seconds (10 - diff));
   }
+
+}
+
+void
+Sniffer::checkAlert ()
+{
+//   std::chrono::system_clock::time_point         now;
+//   std::time_t				       	tt;
+
+//   now = std::chrono::system_clock::now ();
+//   tt = std::chrono::system_clock::to_time_t (now);
+
+//   if (difftime (tt, Sniffer::_firstTime) > 10)
+//     Logger::log (Logger::ALERT, "best hit");
 }
 
 int
 Sniffer::snif ()
 {
-  struct pcap_pkthdr				header;
-  //const u_char*					packet;
+//  struct pcap_pkthdr				header;
+//  std::chrono::system_clock::time_point         now;
+
+//  now = std::chrono::system_clock::now ();
+//  Sniffer::_firstTime = std::chrono::system_clock::to_time_t (now);
+
+  std::thread                                   traffic (Sniffer::checkTraffic);
+  std::thread                                   alert (Sniffer::checkAlert);
 
   pcap_loop (_handle, -1, got_packet, NULL);
-  printf("Jacked a packet with length of [%d]\n", header.len);
-
-
-  pcap_close(_handle);
 
   return ERR_NONE;
 }
@@ -219,7 +178,7 @@ Sniffer::init ()
   struct bpf_program				fp;
   bpf_u_int32					mask;
   bpf_u_int32					net;
-  char						dev[] = "lo";
+  char						dev[] = "en1";
   char						filter_exp[] = "port 80";
 /*
   _dev = pcap_lookupdev (errbuf);

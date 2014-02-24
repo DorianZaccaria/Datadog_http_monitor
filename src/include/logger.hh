@@ -18,6 +18,7 @@ class Logger
     {
       ERROR = 0,
       INFO,
+      ALERT,
       DEBUG
     } Category;
 
