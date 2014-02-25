@@ -7,9 +7,11 @@
 #include "logger.hh"
 
 Sniffer*					Sniffer::_singleton = NULL;
-std::map<std::string, int>                      Sniffer::_map;
-std::time_t                                     Sniffer::_firstTime;
-std::mutex                                      mtx;
+std::map<std::string, int>                      Sniffer::_traffic;
+std::map<std::string, int>                      Sniffer::_average;
+std::set<std::string>                           Sniffer::_alert;
+std::mutex                                      mtxTraffic;
+std::mutex                                      mtxAlert;
 
 
 Sniffer::Sniffer ()
@@ -30,14 +32,121 @@ Sniffer::getSniffer ()
 }
 
 void
+Sniffer::checkTraffic ()
+{
+  std::chrono::system_clock::time_point         start;
+  std::chrono::system_clock::time_point         end;
+  std::map<std::string, int>::iterator          it;
+  int                                           max = 0;
+  std::string                                   str;
+  int                                           diff;
+
+  while (true)
+  {
+    start = std::chrono::system_clock::now ();
+    max = 0;
+    str = "";
+
+    mtxTraffic.lock ();
+
+    for (it = _traffic.begin (); it != _traffic.end (); it++)
+      if (it->second > max)
+      {
+        max = it->second;
+        str = it->first;
+      }
+
+    Logger::log (Logger::DEBUG, "In thread traffic, diff time = " +
+                 std::to_string (diff));
+    Logger::log (Logger::TRAFFIC, "best hit: " + str + " HITS: " +
+                 std::to_string (max));
+
+    _traffic.clear ();
+
+    mtxTraffic.unlock ();
+
+    end = std::chrono::system_clock::now ();
+
+    diff = difftime (std::chrono::system_clock::to_time_t (end),
+                     std::chrono::system_clock::to_time_t (start));
+
+    std::this_thread::sleep_for (std::chrono::seconds (10 - diff));
+  }
+}
+
+void
+Sniffer::checkAlert ()
+{
+  std::chrono::system_clock::time_point         start;
+  std::chrono::system_clock::time_point         end;
+  std::map<std::string, int>::iterator          it;
+  std::set<std::string>::iterator               itt;
+  int                                           diff;
+
+  while (true)
+  {
+    start = std::chrono::system_clock::now ();
+
+    mtxAlert.lock ();
+
+    for (itt = _alert.begin (); itt != _alert.end (); )
+      if (_average.find (*itt) == _average.end () ||
+          _average.find (*itt)->second <= ALERT_THRESHOLD)
+      {
+        Logger::log (Logger::ALERT, "ALERT: " + *itt +
+                     " ACCESS DECREASED UNDER THRESHOLD");
+        _alert.erase (itt++);
+      }
+      else
+        itt++;
+
+    Logger::log (Logger::DEBUG, "In thread Alert, diff time = " +
+                 std::to_string (diff));
+
+    _average.clear ();
+
+    mtxAlert.unlock ();
+
+    end = std::chrono::system_clock::now ();
+
+    diff = difftime (std::chrono::system_clock::to_time_t (end),
+                     std::chrono::system_clock::to_time_t (start));
+
+    std::this_thread::sleep_for (std::chrono::seconds (120 - diff));
+  }
+}
+
+void
 count (std::string const&			str)
 {
-  if (Sniffer::_map.find (str) == Sniffer::_map.end ())
-    Sniffer::_map[str] = 1;
-  else
-    Sniffer::_map[str]++;
+  mtxTraffic.lock ();
 
-  Logger::log (Logger::DEBUG, std::to_string(Sniffer::_map[str]));
+  if (Sniffer::_traffic.find (str) == Sniffer::_traffic.end ())
+    Sniffer::_traffic[str] = 1;
+  else
+    Sniffer::_traffic[str]++;
+
+  mtxTraffic.unlock ();
+  mtxAlert.lock ();
+
+  if (Sniffer::_average.find (str) == Sniffer::_average.end ())
+    Sniffer::_average[str] = 1;
+  else
+  {
+    Sniffer::_average[str]++;
+    if (Sniffer::_average[str] > ALERT_THRESHOLD &&
+        Sniffer::_alert.find (str) == Sniffer::_alert.end ())
+      {
+        Logger::log (Logger::ALERT, "ALERT: " + str +
+                     " EXCEED THRESHOLD ACCESS: " +
+                     std::to_string (Sniffer::_average[str]));
+        Sniffer::_alert.insert (str);
+      }
+  }
+
+  mtxAlert.unlock ();
+
+  Logger::log (Logger::DEBUG, std::to_string(Sniffer::_traffic[str]));
 }
 
 void
@@ -82,7 +191,8 @@ got_packet(u_char*				args,
   size_ip = IP_HL(ip) * 4;
   if (size_ip < 20)
   {
-    Logger::log (Logger::ERROR, "Invalid IP header length: " +  std::to_string (size_ip));
+    Logger::log (Logger::ERROR, "Invalid IP header length: " +
+                 std::to_string (size_ip));
     return;
   }
 
@@ -90,7 +200,8 @@ got_packet(u_char*				args,
   size_tcp = TH_OFF(tcp)*4;
   if (size_tcp < 20)
   {
-    Logger::log (Logger::ERROR, "Invalid TCP header length: " + std::to_string (size_tcp));
+    Logger::log (Logger::ERROR, "Invalid TCP header length: " +
+                 std::to_string (size_tcp));
     return;
   }
 
@@ -99,70 +210,11 @@ got_packet(u_char*				args,
 
   if (size_payload > 0)
     parseHTTP (payload, size_payload);
-
-  Sniffer::checkAlert ();
-}
-
-void
-Sniffer::checkTraffic ()
-{
-  std::chrono::system_clock::time_point         start;
-  std::chrono::system_clock::time_point         end;
-  std::map<std::string, int>::iterator          it;
-  int                                           max = 0;
-  std::string                                   str;
-  int                                           diff;
-
-  while (true)
-  {
-    start = std::chrono::system_clock::now ();
-    mtx.lock ();
-    for (it = Sniffer::_map.begin (); it != Sniffer::_map.end (); it++)
-      if ((*it).second > max)
-      {
-        max = (*it).second;
-        str = (*it).first;
-      }
-
-    Logger::log (Logger::DEBUG, "In thread traffic, diff time = " + std::to_string (diff));
-    Logger::log (Logger::ALERT, "best hit: " + str + " HITS: " + std::to_string (max));
-
-    Sniffer::_map.clear ();
-
-    mtx.unlock ();
-
-    end = std::chrono::system_clock::now ();
-
-    diff = difftime (std::chrono::system_clock::to_time_t (end),
-                     std::chrono::system_clock::to_time_t (start));
-
-    std::this_thread::sleep_for (std::chrono::seconds (10 - diff));
-  }
-
-}
-
-void
-Sniffer::checkAlert ()
-{
-//   std::chrono::system_clock::time_point         now;
-//   std::time_t				       	tt;
-
-//   now = std::chrono::system_clock::now ();
-//   tt = std::chrono::system_clock::to_time_t (now);
-
-//   if (difftime (tt, Sniffer::_firstTime) > 10)
-//     Logger::log (Logger::ALERT, "best hit");
 }
 
 int
 Sniffer::snif ()
 {
-//  struct pcap_pkthdr				header;
-//  std::chrono::system_clock::time_point         now;
-
-//  now = std::chrono::system_clock::now ();
-//  Sniffer::_firstTime = std::chrono::system_clock::to_time_t (now);
-
   std::thread                                   traffic (Sniffer::checkTraffic);
   std::thread                                   alert (Sniffer::checkAlert);
 
@@ -178,24 +230,15 @@ Sniffer::init ()
   struct bpf_program				fp;
   bpf_u_int32					mask;
   bpf_u_int32					net;
-  char						dev[] = "en1";
-  char						filter_exp[] = "port 80";
-/*
-  _dev = pcap_lookupdev (errbuf);
-  if (_dev == NULL)
-  {
-    Logger::log (Logger::ERROR, "Couldn't find device: ", errbuf);
-    return ERR_SNF;
-  }
-*/
-  if (pcap_lookupnet (dev, &net, &mask, errbuf) == -1)
+
+  if (pcap_lookupnet (Options::_dev, &net, &mask, errbuf) == -1)
   {
     Logger::log (Logger::ERROR, "Can't get netmask for device");
     net = 0;
     mask = 0;
   }
 
-  _handle = pcap_open_live(dev, 1518, 1, 100, errbuf);
+  _handle = pcap_open_live(Options::_dev, 1518, 1, 100, errbuf);
   if (_handle == NULL)
   {
     Logger::log (Logger::ERROR, "Couldn't open device: ", errbuf);
@@ -204,11 +247,11 @@ Sniffer::init ()
 
   if (pcap_datalink (_handle) != DLT_EN10MB)
   {
-    Logger::log (Logger::ERROR, "Device Doesn't provide Ethernet headers");
+    Logger::log (Logger::ERROR, "Device doesn't provide ethernet headers");
     return ERR_SNF;
   }
 
-  if (pcap_compile (_handle, &fp, filter_exp, 0, net) == -1)
+  if (pcap_compile (_handle, &fp, FILTER, 0, net) == -1)
   {
     Logger::log (Logger::ERROR, "Couldn't parse filter: ", FILTER);
     Logger::log (Logger::DEBUG, pcap_geterr (_handle));

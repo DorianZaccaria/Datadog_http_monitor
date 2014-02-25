@@ -5,8 +5,9 @@
 
 Options*				Options::_singleton = NULL;
 bool					Options::_debug = false;
-bool					Options::_alert = false;
-bool					Options::_traffic = false;
+bool					Options::_alert = true;
+bool					Options::_traffic = true;
+char*                                   Options::_dev;
 
 Options::Options ()
 {
@@ -30,9 +31,10 @@ Options::parse (int const		argc,
 {
   const struct option			longopts[] =
   {
-    {"alert-only", no_argument, 0, 'a'},
-    {"trafic-only", no_argument, 0, 't'},
+    {"without-alert", no_argument, 0, 'a'},
+    {"without-traffic", no_argument, 0, 't'},
     {"debug", no_argument, 0, 'd'},
+    {"interface", required_argument, 0, 'i'},
     {0, 0, 0, 0}
   };
   int					index;
@@ -42,7 +44,7 @@ Options::parse (int const		argc,
 
   while (true)
   {
-    iarg = getopt_long (argc, argv, "atd", longopts, &index);
+    iarg = getopt_long (argc, argv, "atd:i", longopts, &index);
 
     if (iarg == -1)
       break;
@@ -50,13 +52,16 @@ Options::parse (int const		argc,
     switch (iarg)
     {
       case 'a':
-	Options::_alert = true;
+	Options::_alert = false;
 	break;
       case 't':
-	Options::_traffic = true;
+	Options::_traffic = false;
 	break;
       case 'd':
 	Options::_debug = true;
+	break;
+      case 'i':
+	Options::_dev = optarg;
 	break;
       case '?':
 	return ERR_ARG;
@@ -64,5 +69,9 @@ Options::parse (int const		argc,
 	return ERR_ERROR;
     }
   }
+
+  if (_dev == '\0')
+    return ERR_ARG;
+
   return ERR_NONE;
 }

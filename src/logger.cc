@@ -11,6 +11,7 @@ static std::string const cat_header[Logger::DEBUG + 1] =
 {
   [Logger::ERROR] = "ERROR",
   [Logger::INFO] = "INFO",
+  [Logger::TRAFFIC] = "TRAFFIC",
   [Logger::ALERT] = "ALERT",
   [Logger::DEBUG] = "DEBUG"
 };
@@ -44,7 +45,9 @@ Logger::log (Logger::Category const			cat,
     buf = std::cout.rdbuf ();
   std::ostream						output (buf);
 
-  if (cat == DEBUG && !Options::_debug)
+  if ((cat == DEBUG && !Options::_debug) ||
+      (cat == TRAFFIC && !Options::_traffic) ||
+      (cat == ALERT && !Options::_alert))
     return;
 
   now = std::chrono::system_clock::now ();

@@ -35,6 +35,11 @@ class Options
      * access to it.
      */
     static bool				_traffic;
+    /*!
+     * @brief the device option variable, in public in order to easily
+     * access to it. This option is mandatory.
+     */
+    static char*	       		_dev;
 
     /*!
      * @brief getOpt

@@ -19,7 +19,7 @@ int				main (int			argc,
       Snif->snif ();
       return code;
     case ERR_ARG:
-      Logger::log (Logger::ERROR, "Unrecognized argument");
+      Logger::log (Logger::ERROR, "Unrecognized or missing argument");
       return code;
     case ERR_ERROR:
       Logger::log (Logger::ERROR, "Unexpected error");
