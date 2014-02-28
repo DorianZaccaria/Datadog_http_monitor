@@ -1,0 +1,36 @@
+README
+================================================================================
+
+This software snif the http traffic on the given interface. Each 10 seconds it
+gives the section of the website the most hits. Whenever total traffic for the
+past 2 minutes exceeds a certain number on average, the program displays an
+alert.
+
+BUILD
+================================================================================
+
+This softawre use the c++11 standard for threads and time management. It was
+successfully compiled with g++-4.8 on linux X86 and mac OS X.
+
+To build the software:
+   $ make
+To create the documentation with doxygen:
+   $ make doc
+To clean the source directory after compilation
+   $ make clean
+To remove binaries:
+   $ make distlean
+
+
+RUN
+================================================================================
+
+To run the program it is mandatory to give an interface, use the option --interface
+or -i following by the interface name.
+
+   $ ./DatadogMonitor --interface eth0
+
+The following options are available
+    --debug -d: anable the debug mode which display more information
+    --without-traffic -t: disable traffic related messages
+    --without-alert -a: disable alert related messages

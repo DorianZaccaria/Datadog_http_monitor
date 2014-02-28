@@ -108,6 +108,15 @@ doc: $(DOXYFILE)
 
 dist: distclean $(PROJECT_TARTYPE)
 
+check: all
+	@echo ""
+	@echo "==== CHECKING ===="
+	@echo ""
+	./check/check.sh
+	@echo ""
+	@echo "==== END ===="
+	@echo ""
+
 tar.bz2:
 	tar -cvjf /tmp/$(TARBALL) --exclude=$(TARBALL) --exclude=.git ../`basename ${PWD}` \
 	  && mv /tmp/$(TARBALL) .

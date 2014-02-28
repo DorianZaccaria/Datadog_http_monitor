@@ -100,6 +100,16 @@ Sniffer::checkAlert ()
       else
         itt++;
 
+    for (it = _average.begin (); it != _average.end (); it++)
+      if (it->second > ALERT_THRESHOLD &&
+          _alert.find (it->first) == _alert.end ())
+      {
+        Logger::log (Logger::ALERT, "ALERT: " + it->first +
+                     " EXCEED THRESHOLD ACCESS: " +
+                     std::to_string (it->second));
+        Sniffer::_alert.insert (it->first);
+      }
+
     Logger::log (Logger::DEBUG, "In thread Alert, diff time = " +
                  std::to_string (diff));
 
@@ -132,17 +142,7 @@ count (std::string const&			str)
   if (Sniffer::_average.find (str) == Sniffer::_average.end ())
     Sniffer::_average[str] = 1;
   else
-  {
     Sniffer::_average[str]++;
-    if (Sniffer::_average[str] > ALERT_THRESHOLD &&
-        Sniffer::_alert.find (str) == Sniffer::_alert.end ())
-      {
-        Logger::log (Logger::ALERT, "ALERT: " + str +
-                     " EXCEED THRESHOLD ACCESS: " +
-                     std::to_string (Sniffer::_average[str]));
-        Sniffer::_alert.insert (str);
-      }
-  }
 
   mtxAlert.unlock ();
 
