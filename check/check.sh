@@ -1,14 +1,14 @@
-#! /bin/sh
+#! /bin/bash
 
-sudo ./DatadogMonitor --interface "en1" > check/test.txt 2> check/error.txt &
+sudo ./DatadogMonitor --interface "eth0" > check/test.txt 2> check/error.txt &
 
 PID=$!
 
-trap "sudo kill $PID; exit" SIGHUP SIGINT SIGTERM
+trap "sudo kill $PID; exit" SIGINT SIGTERM
 
 echo "WAIT: TEST IN PROGRESS"
 
-sleep 11s
+sleep 12s
 
 echo "WAIT: TEST IN PROGRESS"
 curl http://dzaccaria.no-ip.biz/owncloud -o check/tmp.html > /dev/null 2> /dev/null

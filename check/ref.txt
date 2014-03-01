@@ -1,32 +1,31 @@
-[1393565724][INFO] Options parsed
-[1393565724][INFO] Program launched
-[1393565724][TRAFFIC] best hit:  HITS: 0
-[1393565734][TRAFFIC] best hit:  HITS: 0
-[1393565744][TRAFFIC] best hit: /owncloud HITS: 1
-[1393565754][TRAFFIC] best hit:  HITS: 0
-[1393565764][TRAFFIC] best hit: /owncloud HITS: 3
-[1393565774][TRAFFIC] best hit:  HITS: 0
-[1393565784][TRAFFIC] best hit:  HITS: 0
-[1393565794][TRAFFIC] best hit:  HITS: 0
-[1393565804][TRAFFIC] best hit: /zenphoto HITS: 2
-[1393565814][TRAFFIC] best hit:  HITS: 0
-[1393565824][TRAFFIC] best hit: /zenphoto HITS: 2
-[1393565834][TRAFFIC] best hit:  HITS: 0
-[1393565844][ALERT] ALERT: /owncloud EXCEED THRESHOLD ACCESS: 4
-[1393565844][ALERT] ALERT: /zenphoto EXCEED THRESHOLD ACCESS: 4
-[1393565844][TRAFFIC] best hit:  HITS: 0
-[1393565854][TRAFFIC] best hit:  HITS: 0
-[1393565864][TRAFFIC] best hit:  HITS: 0
-[1393565874][TRAFFIC] best hit:  HITS: 0
-[1393565884][TRAFFIC] best hit:  HITS: 0
-[1393565894][TRAFFIC] best hit:  HITS: 0
-[1393565904][TRAFFIC] best hit:  HITS: 0
-[1393565914][TRAFFIC] best hit:  HITS: 0
-[1393565924][TRAFFIC] best hit:  HITS: 0
-[1393565934][TRAFFIC] best hit:  HITS: 0
-[1393565944][TRAFFIC] best hit:  HITS: 0
-[1393565954][TRAFFIC] best hit:  HITS: 0
-[1393565964][ALERT] ALERT: /owncloud ACCESS DECREASED UNDER THRESHOLD
-[1393565964][ALERT] ALERT: /zenphoto ACCESS DECREASED UNDER THRESHOLD
-[1393565964][TRAFFIC] best hit:  HITS: 0
-[1393565974][TRAFFIC] best hit:  HITS: 0
+[INFO] Options parsed
+[INFO] Program launched
+[TRAFFIC] best hit:  HITS: 0
+[TRAFFIC] best hit:  HITS: 0
+[TRAFFIC] best hit: /owncloud HITS: 1
+[TRAFFIC] best hit:  HITS: 0
+[TRAFFIC] best hit: /owncloud HITS: 3
+[TRAFFIC] best hit:  HITS: 0
+[TRAFFIC] best hit:  HITS: 0
+[TRAFFIC] best hit:  HITS: 0
+[TRAFFIC] best hit: /zenphoto HITS: 2
+[TRAFFIC] best hit: /zenphoto HITS: 2
+[TRAFFIC] best hit:  HITS: 0
+[TRAFFIC] best hit:  HITS: 0
+[ALERT] ALERT: /owncloud EXCEED THRESHOLD ACCESS: 4
+[ALERT] ALERT: /zenphoto EXCEED THRESHOLD ACCESS: 4
+[TRAFFIC] best hit:  HITS: 0
+[TRAFFIC] best hit:  HITS: 0
+[TRAFFIC] best hit:  HITS: 0
+[TRAFFIC] best hit:  HITS: 0
+[TRAFFIC] best hit:  HITS: 0
+[TRAFFIC] best hit:  HITS: 0
+[TRAFFIC] best hit:  HITS: 0
+[TRAFFIC] best hit:  HITS: 0
+[TRAFFIC] best hit:  HITS: 0
+[TRAFFIC] best hit:  HITS: 0
+[TRAFFIC] best hit:  HITS: 0
+[TRAFFIC] best hit:  HITS: 0
+[ALERT] ALERT: /owncloud ACCESS DECREASED UNDER THRESHOLD
+[ALERT] ALERT: /zenphoto ACCESS DECREASED UNDER THRESHOLD
+[TRAFFIC] best hit:  HITS: 0

@@ -35,8 +35,6 @@ void
 Logger::log (Logger::Category const			cat,
 	     std::string const&				msg)
 {
-  std::chrono::system_clock::time_point			now;
-  std::time_t						tt;
   std::streambuf*					buf = NULL;
 
   if (cat == ERROR)
@@ -50,11 +48,7 @@ Logger::log (Logger::Category const			cat,
       (cat == ALERT && !Options::_alert))
     return;
 
-  now = std::chrono::system_clock::now ();
-  tt = std::chrono::system_clock::to_time_t (now);
-
-  output << "[" << tt << "]"
-	 << "[" << cat_header[cat] << "] "
+  output  << "[" << cat_header[cat] << "] "
 	 << msg << std::endl;
 }
 

@@ -24,9 +24,9 @@ PROJECT_TARNAME = $(PROJECTNAME)-v$(PROJECTVERSION)-$(PROJECTSUBVERSION).$(PROJE
 # The archiving type tar.bz2
 PROJECT_TARTYPE = tar.bz2
 
-EXTRA_CPPFLAGS = -std=c++11
+EXTRA_CPPFLAGS = -std=c++11 -pthread
 EXTRA_CPPFLAGS +=  -g -ggdb3
-EXTRA_LDFLAGS = -lpcap
+EXTRA_LDFLAGS = -lpcap -std=c++11 -pthread
 # END OF EDIT/CUSTOMISATION AREA
 ##
 
