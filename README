@@ -25,12 +25,30 @@ To remove binaries:
 RUN
 ================================================================================
 
-To run the program it is mandatory to give an interface, use the option --interface
-or -i following by the interface name.
+To run the program it is mandatory to give an interface, use the option
+--interface or --i following by the interface name.
 
    $ ./DatadogMonitor --interface eth0
 
 The following options are available
-    --debug -d: anable the debug mode which display more information
-    --without-traffic -t: disable traffic related messages
-    --without-alert -a: disable alert related messages
+    --debug --d: anable the debug mode which display more information
+    --without-traffic --t: disable traffic related messages
+    --without-alert --a: disable alert related messages
+
+TESTS
+================================================================================
+Before lauching the test please edit the interface name given to the program.
+After you can run:
+
+   $ make check
+
+even if the test fail, you can loook at the file check/test.txt to see if the
+difference with the reference is due to the response delay of the website.
+
+BUGS
+================================================================================
+
+I test this example on debian 32 and 64 bit and Mac OS X 10.9.1. During the
+compilation you will find some warnings due to unused parameters given to the
+callback.
+Moreover on Mac, the library pthread is not used (due to clang but gcc need it).

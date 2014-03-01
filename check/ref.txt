@@ -2,20 +2,18 @@
 [INFO] Program launched
 [TRAFFIC] best hit:  HITS: 0
 [TRAFFIC] best hit:  HITS: 0
-[TRAFFIC] best hit: /owncloud HITS: 1
+[TRAFFIC] best hit: /translate HITS: 1
 [TRAFFIC] best hit:  HITS: 0
-[TRAFFIC] best hit: /owncloud HITS: 3
-[TRAFFIC] best hit:  HITS: 0
-[TRAFFIC] best hit:  HITS: 0
-[TRAFFIC] best hit:  HITS: 0
-[TRAFFIC] best hit: /zenphoto HITS: 2
-[TRAFFIC] best hit: /zenphoto HITS: 2
+[TRAFFIC] best hit: /translate HITS: 3
 [TRAFFIC] best hit:  HITS: 0
 [TRAFFIC] best hit:  HITS: 0
-[ALERT] ALERT: /owncloud EXCEED THRESHOLD ACCESS: 4
-[ALERT] ALERT: /zenphoto EXCEED THRESHOLD ACCESS: 4
+[TRAFFIC] best hit:  HITS: 0
+[TRAFFIC] best hit: /maps HITS: 2
+[TRAFFIC] best hit: /maps HITS: 2
 [TRAFFIC] best hit:  HITS: 0
 [TRAFFIC] best hit:  HITS: 0
+[ALERT] ALERT: /maps EXCEED THRESHOLD ACCESS: 4
+[ALERT] ALERT: /translate EXCEED THRESHOLD ACCESS: 4
 [TRAFFIC] best hit:  HITS: 0
 [TRAFFIC] best hit:  HITS: 0
 [TRAFFIC] best hit:  HITS: 0
@@ -26,6 +24,8 @@
 [TRAFFIC] best hit:  HITS: 0
 [TRAFFIC] best hit:  HITS: 0
 [TRAFFIC] best hit:  HITS: 0
-[ALERT] ALERT: /owncloud ACCESS DECREASED UNDER THRESHOLD
-[ALERT] ALERT: /zenphoto ACCESS DECREASED UNDER THRESHOLD
+[TRAFFIC] best hit:  HITS: 0
+[TRAFFIC] best hit:  HITS: 0
+[ALERT] ALERT: /maps ACCESS DECREASED UNDER THRESHOLD
+[ALERT] ALERT: /translate ACCESS DECREASED UNDER THRESHOLD
 [TRAFFIC] best hit:  HITS: 0
